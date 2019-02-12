@@ -10,19 +10,28 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class InterServComClient {
+   /* private final static Logger logger = Logger.getLogger(InterServComClient.class.getName());
+    static private FileHandler fileTxt ;*/
     private final int port;
     private int flag ;
-    public InterServComClient(int port, int flag){
+    public InterServComClient(int port, int flag) throws IOException {
         this.port = port;
         this.flag = flag;
+      /*  logger.setLevel(Level.INFO);
+        fileTxt = new FileHandler("InerServComServer.txt");
+        logger.addHandler(fileTxt);*/
+
     }
 
     public String operate(DataModel pack){
         String defaultReply = "System Failure";
         try{
-            DatagramSocket aSocket = new DatagramSocket(this.port);
+            DatagramSocket aSocket = new DatagramSocket();
             System.out.println("I am a caller. calling...");
             ByteArrayOutputStream bStream = new ByteArrayOutputStream();
             ObjectOutput oo = new ObjectOutputStream(bStream);

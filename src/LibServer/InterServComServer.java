@@ -12,6 +12,9 @@ import java.net.SocketException;
     import java.rmi.NotBoundException;
     import java.rmi.registry.LocateRegistry;
     import java.rmi.registry.Registry;
+    import java.util.logging.FileHandler;
+    import java.util.logging.Level;
+    import java.util.logging.Logger;
 
 public class InterServComServer implements  Runnable{
     private int flag;
@@ -19,10 +22,20 @@ public class InterServComServer implements  Runnable{
     int MCG = 13131;
     int MON = 13132;
     int CON = 13133;
+
+   /* private final static Logger logger = Logger.getLogger(InterServComServer.class.getName());
+    static private FileHandler fileTxt ;*/
     DatagramSocket activeSocket = null;
+
+
 
         public InterServComServer(int flag) {
          try {
+
+             /*logger.setLevel(Level.INFO);
+             fileTxt = new FileHandler("InerServComServer.txt");
+             logger.addHandler(fileTxt);*/
+
              if(flag == 1 || flag == 4 || flag == 7){
                  activeSocket = new DatagramSocket(MCG);
                  System.out.println("mcg active");
@@ -58,35 +71,38 @@ public class InterServComServer implements  Runnable{
                     LibUserInterface mcgUser = null;
                     LibUserInterface conUser = null;
                     LibUserInterface monUser = null;
+                    mcgUser = (LibUserInterface)registry.lookup("MCG");
+                    monUser = (LibUserInterface)registry.lookup("MON");
+                    conUser = (LibUserInterface)registry.lookup("CON");
 
                     String reply = "";
                     switch (op) {
                         case 1:
                             System.out.println("I was here");
-                            mcgUser = (LibUserInterface)registry.lookup(pack.getUserId().substring(0,3));
                             reply = mcgUser.borrowItem(pack.getUserId(),pack.getItemId(),pack.getDaysToBorrow());
                             break;
                         case 4:
+
                             reply = mcgUser.findItem(pack.getUserId(),pack.getItemName());
                             break;
                         case 7:
                             reply = mcgUser.ReturnItem(pack.getUserId(),pack.getItemId());
                             break;
                         case 2:
-                            monUser = (LibUserInterface)registry.lookup(pack.getUserId().substring(0,3));
                             reply = monUser.borrowItem(pack.getUserId(),pack.getItemId(),pack.getDaysToBorrow());
                             break;
                         case 5:
                             reply = monUser.findItem(pack.getUserId(),pack.getItemName());
                             break;
                         case 8:
+
                             reply = monUser.ReturnItem(pack.getUserId(),pack.getItemId());
                             break;
                         case 3:
-                            conUser = (LibUserInterface)registry.lookup(pack.getUserId().substring(0,3));
                             reply = conUser.borrowItem(pack.getUserId(),pack.getItemId(),pack.getDaysToBorrow());
                             break;
                         case 6:
+
                             reply = conUser.findItem(pack.getUserId(),pack.getItemName());
                             break;
                         case 9:

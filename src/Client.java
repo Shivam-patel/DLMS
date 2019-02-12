@@ -1,20 +1,28 @@
+import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import LibInterface.LibManagerInterface;
 import LibInterface.LibUserInterface;
 
 public class Client implements Runnable{
-	
+
+	private final static Logger logger = Logger.getLogger(Client.class.getName());
+	static private FileHandler fileTxt;
 	public Client() {
 		
 	}
 
 	@Override
 	public void run() {
+		boolean append = true;
+
 		Character userType = null;
 		String clientId = "";
 		String userServer = "";
@@ -23,9 +31,12 @@ public class Client implements Runnable{
 		Scanner input = new Scanner(System.in);
 		String clientInput1 = input.nextLine();
 		//int option1 = Integer.parseInt(clientInput1);
-		
+	//	logger.info("ClientInput: "+clientInput1);
 		if(clientInput1.equals("0")) {
 			System.out.println("Exiting the system...");
+/*
+			logger.info("exit code: 0");
+*/
 			System.exit(0);
 		}
 		else
@@ -48,6 +59,7 @@ public class Client implements Runnable{
 			if((managerInt.validate(clientId, userType.toString())))
 			{
 				manager = new ManagerClient(clientId);
+				logger.info("Client is a manager, initiating new thread...");
 				Thread t = new Thread(manager);
 				t.start();	
 			}
@@ -62,6 +74,8 @@ public class Client implements Runnable{
 			if((userInt.validate(clientId, userType.toString())))
 			{
 				user = new UserClient(clientId);
+				logger.info("Client is a user, initiating new thread...");
+
 				Thread t = new Thread(user);
 				t.start();	
 			}
@@ -81,10 +95,16 @@ public class Client implements Runnable{
 		} catch (NotBoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-	//input.close();
+		//input.close();
 	}
-	public static void main(String []args) {
+	public static void main(String []args) throws IOException {
 		new Thread(new Client()).start();
+		logger.setLevel(Level.INFO);
+		fileTxt = new FileHandler("ClientLog.txt");
+		logger.addHandler(fileTxt);
+
 	}
 }
