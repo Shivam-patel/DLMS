@@ -42,14 +42,16 @@ public class InterServComClient {
             byte[] message = bStream.toByteArray();
             InetAddress aHost = InetAddress.getByName("localhost");
             DatagramPacket request = new DatagramPacket(message, message.length, aHost, port);
+            System.out.println("sending...");
             aSocket.send(request);
 
             byte [] buffer1 = new byte[1000];
             DatagramPacket rep = new DatagramPacket(buffer1, buffer1.length);
             aSocket.receive(rep);
            // buffer = reply.getData();
+
             String replyString = new String(rep.getData());
-            aSocket.close();
+            System.out.println(replyString);
             return replyString;
 
         }catch(SocketException e){

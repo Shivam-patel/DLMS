@@ -101,6 +101,8 @@ public class UserClient implements Runnable{
 			logger.info(reply);
 			System.out.println("The result of the operation is as follows \n" + reply);
 
+			//new Thread(new Client()).start();
+
 			
 		}catch (RemoteException e) {
 			// TODO Auto-generated catch block

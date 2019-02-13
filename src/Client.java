@@ -1,4 +1,6 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -28,8 +30,9 @@ public class Client implements Runnable{
 		String userServer = "";
 		System.out.println("Enter 0 to exit.");
 		System.out.println("To continue, enter your ID.");
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		Scanner input = new Scanner(System.in);
-		String clientInput1 = input.nextLine();
+		String clientInput1 = input.next();
 		//int option1 = Integer.parseInt(clientInput1);
 	//	logger.info("ClientInput: "+clientInput1);
 		if(clientInput1.equals("0")) {

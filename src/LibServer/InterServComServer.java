@@ -60,6 +60,7 @@ public class InterServComServer implements  Runnable{
         while(true) {
                 byte[] buffer = new byte[65000];
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+
                 ObjectInputStream iStream = null;
                 try {
                     activeSocket.receive(request);

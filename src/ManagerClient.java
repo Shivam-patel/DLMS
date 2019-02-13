@@ -1,5 +1,6 @@
 import LibInterface.LibManagerInterface;
 
+import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -64,15 +65,21 @@ public class ManagerClient implements Runnable{
 			case 5: 
 				
 				reply = manager.listItemAvailability(managerId);
+				break;
+			case 6:
+				System.exit(0);
 				
 			}
-			System.out.println("The result of the operation is as follows: \n" + reply);
 
+			System.out.println("The result of the operation is as follows: \n" + reply);
+			//new Thread(new Client()).start();
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NotBoundException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		in.close();

@@ -1,6 +1,10 @@
 package LibServer;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,8 +19,10 @@ import model.DataModel;
 import LibInterface.LibManagerInterface;
 import LibInterface.LibUserInterface;
 
+import javax.xml.crypto.Data;
 
-public class ConServer extends UnicastRemoteObject implements LibUserInterface, LibManagerInterface {
+
+public class ConServer extends UnicastRemoteObject implements LibUserInterface, LibManagerInterface,Runnable {
 
 	/**
 	 * 
@@ -81,11 +87,36 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 		conWaitlist.put("CON0002", wait02);
 		conWaitlist.put("CON0001", wait);
 
+		Thread t = new Thread(this);
 
 
 
 	}
-
+	public void run() {
+		try {
+			this.getWaitRequest();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	public void getWaitRequest() throws IOException, ClassNotFoundException {
+		DatagramSocket aSocket = new DatagramSocket(9988);
+		byte[] buffer = new byte[1000];
+		DatagramPacket request = new DatagramPacket(buffer,buffer.length);
+		System.out.println("conwait ready");
+		aSocket.receive(request);
+		ObjectInputStream iStream = null;
+		iStream = new ObjectInputStream(new ByteArrayInputStream(request.getData()));
+		DataModel pack = (DataModel) iStream.readObject();
+		iStream.close();
+		String reply;
+		reply = this.addToWaitlist(pack.getUserId(),pack.getItemId(),pack.getDaysToBorrow());
+		byte[] response = reply.getBytes();
+		DatagramPacket re = new DatagramPacket(response, response.length,request.getAddress(),request.getPort());
+		aSocket.send(re);
+	}
 
 	@Override
 	public String addUser(String managerId, String userId) {
@@ -138,7 +169,7 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 	}
 
 	@Override
-	public String addItem(String managerId, String itemId, String itemName, int quantity) {
+	public String addItem(String managerId, String itemId, String itemName, int quantity) throws IOException {
 		boolean old = false;
 		logger.info("addItem");
 		logger.info(managerId +"\t" + itemId+"\t" + itemName+"\t" + quantity);
@@ -154,7 +185,7 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 			itemCount+=quantity;
 			value.setQuantity(itemCount);
 			logger.info("Success");
-
+			this.moveWaitlist(itemId);
 			return "Success.";
 		}
 		DataModel value = new DataModel();
@@ -162,7 +193,7 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 		value.setQuantity(quantity);
 		conLibrary.put(itemId, value);
 		logger.info("Success");
-
+		this.moveWaitlist(itemId);
 		return "Success";
 	}
 
@@ -174,7 +205,9 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 			logger.info(managerId +"\t" + itemId+"\t" + quantity);
 
 			Integer numb = value.getQuantity();
-			if(quantity>= numb) {
+			if(quantity>numb)
+				return "Incorrect Quantity";
+			if(quantity== numb || quantity == -1) {
 				conLibrary.remove(itemId);
 
 				/* Call a method to remove all the allocations of any removed books. or Ask the TA about what to do. */
@@ -339,7 +372,12 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 				reply = reply.concat("\n");
 			}
 		}
-		if(users.contains(userId)) {
+		boolean home = false;
+		for(DataModel di:users){
+			if(di.getUserId().startsWith(userId))
+				home = true;
+		}
+		if(home) {
 			logger.info("calling McGill Server");
 			InterServComClient temp = new InterServComClient(MCG, 4);
 			logger.info("calling Montreal Server");
@@ -366,8 +404,14 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 		logger.info(userId+"\t"+itemId);
 		String reply = null;
 		if(itemId.startsWith("CON")) {
-
-			if(itemsBorrowed.containsKey(userId))
+			if(removedItems.contains(itemId)){
+				reply = "Success";
+				DataModel value = itemsBorrowed.get(userId);
+				if(value.getBorrowedBooks().containsKey(itemId)) {
+					value.getBorrowedBooks().remove(itemId);
+				}
+			}
+			else if(itemsBorrowed.containsKey(userId))
 			{
 				DataModel value = itemsBorrowed.get(userId);
 				if(value.getBorrowedBooks().containsKey(itemId)) {
@@ -384,9 +428,7 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 
 				}
 			}
-			else if(removedItems.contains(itemId)){
-				reply = "Success";
-			}
+
 			else {
 				reply = "You can not submit this book.";
 			}
@@ -438,36 +480,88 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 	public String addToWaitlist(String userId, String itemId, int numberOfDays) {
 		logger.info("addToWaitlist");
 		logger.info(userId+"\t"+itemId+"\t"+numberOfDays);
-		ArrayList<DataModel> value;
-		DataModel pack = new DataModel();
-		value = conWaitlist.get(itemId);
-		try {
-			if (value.isEmpty()) {
+		if(conLibrary.containsKey(itemId)) {
+			ArrayList<DataModel> value;
+			DataModel pack = new DataModel();
+			value = conWaitlist.get(itemId);
+			try {
+				if (value.isEmpty()) {
+					value = new ArrayList<>();
+				}
+			} catch (NullPointerException e) {
 				value = new ArrayList<>();
-			}
-		}catch(NullPointerException e)
-		{
-			value = new ArrayList<>();
 
+			}
+			pack.setUserId(userId);
+			pack.setDaysToBorrow(numberOfDays);
+			value.add(pack);
+			conWaitlist.put(itemId, value);
+			logger.info("Success");
+			return "Success";
 		}
-		pack.setUserId(userId);
-		pack.setDaysToBorrow(numberOfDays);
-		value.add(pack);
-		conWaitlist.put(itemId,value);
-		logger.info("Success");
-		return "Success";
+		else
+		{
+			try {
+				int monPort = 9986;
+				int mcgPort = 9987;
+				int conPort = 9988;
+				DatagramSocket aSocket = new DatagramSocket();
+				DataModel pack = new DataModel();
+				pack.setUserId(userId);
+				pack.setDaysToBorrow(numberOfDays);
+				pack.setItemId(itemId);
+				ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+				ObjectOutput oo = new ObjectOutputStream(bStream);
+				oo.writeObject(pack);
+				byte[] request = bStream.toByteArray();
+				InetAddress aHost = InetAddress.getLocalHost();
+				if(itemId.startsWith("MCG")){
+					DatagramPacket req = new DatagramPacket(request, request.length,aHost,mcgPort);
+					aSocket.send(req);
+					byte [] buffer1 = new byte[1000];
+					DatagramPacket rep = new DatagramPacket(buffer1, buffer1.length);
+					aSocket.receive(rep);
+					String replyString = new String(rep.getData());
+					return replyString;
+				}
+				else if(itemId.startsWith("MON")){
+					DatagramPacket req = new DatagramPacket(request, request.length,aHost,monPort);
+					aSocket.send(req);
+					System.out.println("request sent");
+					byte [] buffer1 = new byte[1000];
+					DatagramPacket rep = new DatagramPacket(buffer1, buffer1.length);
+					aSocket.receive(rep);
+					String replyString = new String(rep.getData());
+					return replyString;
+				}
+				aSocket.close();
+			} catch (SocketException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return "Error. Please check the inputs.";
+		}
+
+
 	}
 	public String moveWaitlist(String itemId) throws IOException {
 		logger.info("moveWaitList");
 		logger.info(itemId);
 
 		ArrayList<DataModel> list = conWaitlist.get(itemId);
-		int quantity = conLibrary.get(itemId).getQuantity();
+
 		String reply = null;
 		Iterator<DataModel> iter = list.iterator();
 		while(conLibrary.get(itemId).getQuantity()!=0 && !list.isEmpty() && iter.hasNext()){
 			DataModel user = iter.next();
 			reply = this.borrowItem( user.getUserId(),itemId,user.getDaysToBorrow());
+			if(reply.startsWith("Succ")){
+				list.remove(user);
+				for(DataModel di:list){
+					System.out.println("I am in....");
+				}
+			}
 		}
 		logger.info(reply);
 		return reply;
