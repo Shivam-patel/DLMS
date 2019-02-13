@@ -7,24 +7,19 @@ package LibServer;
     import java.io.*;
     import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+
     import java.rmi.NotBoundException;
     import java.rmi.registry.LocateRegistry;
     import java.rmi.registry.Registry;
-    import java.util.logging.FileHandler;
-    import java.util.logging.Level;
-    import java.util.logging.Logger;
+
 
 public class InterServComServer implements  Runnable{
-    private int flag;
-    private int port;
+
     int MCG = 13131;
     int MON = 13132;
     int CON = 13133;
 
-   /* private final static Logger logger = Logger.getLogger(InterServComServer.class.getName());
-    static private FileHandler fileTxt ;*/
+
     DatagramSocket activeSocket = null;
 
 
@@ -32,9 +27,7 @@ public class InterServComServer implements  Runnable{
         public InterServComServer(int flag) {
          try {
 
-             /*logger.setLevel(Level.INFO);
-             fileTxt = new FileHandler("InerServComServer.txt");
-             logger.addHandler(fileTxt);*/
+
 
              if(flag == 1 || flag == 4 || flag == 7){
                  activeSocket = new DatagramSocket(MCG);
@@ -61,7 +54,7 @@ public class InterServComServer implements  Runnable{
                 byte[] buffer = new byte[65000];
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
 
-                ObjectInputStream iStream = null;
+                ObjectInputStream iStream ;
                 try {
                     activeSocket.receive(request);
                     iStream = new ObjectInputStream(new ByteArrayInputStream(request.getData()));
@@ -69,9 +62,9 @@ public class InterServComServer implements  Runnable{
                     iStream.close();
                     int op = pack.getFlag();
                     Registry registry = LocateRegistry.getRegistry(8089);
-                    LibUserInterface mcgUser = null;
-                    LibUserInterface conUser = null;
-                    LibUserInterface monUser = null;
+                    LibUserInterface mcgUser ;
+                    LibUserInterface conUser ;
+                    LibUserInterface monUser ;
                     mcgUser = (LibUserInterface)registry.lookup("MCG");
                     monUser = (LibUserInterface)registry.lookup("MON");
                     conUser = (LibUserInterface)registry.lookup("CON");

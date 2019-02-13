@@ -22,9 +22,7 @@ import LibInterface.LibUserInterface;
 
 public class McgServer extends UnicastRemoteObject implements LibUserInterface, LibManagerInterface,Runnable {
 
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 	private HashMap<String, DataModel> mcgLibrary = new HashMap<String, DataModel>();
 	private HashMap<String, ArrayList<DataModel>> mcgWaitlist = new HashMap<>();
@@ -32,7 +30,6 @@ public class McgServer extends UnicastRemoteObject implements LibUserInterface, 
 	private HashMap<String,DataModel> itemsBorrowed = new HashMap<>();
 	private ArrayList<DataModel> users = new ArrayList<>();
 	private ArrayList<String> managers = new ArrayList<>();
-	int MCG = 13131;
 	int MON = 13132;
 	int CON = 13133;
 
@@ -104,7 +101,7 @@ public class McgServer extends UnicastRemoteObject implements LibUserInterface, 
         byte[] buffer = new byte[1000];
         DatagramPacket request = new DatagramPacket(buffer,buffer.length);
         aSocket.receive(request);
-        ObjectInputStream iStream = null;
+        ObjectInputStream iStream ;
         iStream = new ObjectInputStream(new ByteArrayInputStream(request.getData()));
         DataModel pack = (DataModel) iStream.readObject();
         iStream.close();
@@ -147,11 +144,9 @@ public class McgServer extends UnicastRemoteObject implements LibUserInterface, 
 
         logger.info(managerId +"\t" + newManagerId);
         if(managers.contains(newManagerId)) {
-            //		System.out.println("The manager already exist in the library databsae.");
             return "Id already exist.";
         }
         else if(managerId.substring(0, 3).equals("MCG") && managerId.substring(3,4).equals("M") && managerId.substring(4).matches(".*\\d+.*")) {
-            // make a new manager
             managers.add(newManagerId);
             logger.info("Success");
 
@@ -206,7 +201,6 @@ public class McgServer extends UnicastRemoteObject implements LibUserInterface, 
             if(quantity== numb || quantity == -1) {
                 mcgLibrary.remove(itemId);
 
-                /* Call a method to remove all the allocations of any removed books. or Ask the TA about what to do. */
                 removeFromWaitlist(itemId);
                 logger.info("Success");
 
@@ -226,7 +220,6 @@ public class McgServer extends UnicastRemoteObject implements LibUserInterface, 
             return "Item not present in the library";
         }
     }
-    //reference https://www.geeksforgeeks.org/iterate-map-java/
     @Override
     public String listItemAvailability(String managerId) {
         String reply = "";
@@ -274,9 +267,7 @@ public class McgServer extends UnicastRemoteObject implements LibUserInterface, 
                 }
                 else {
                     borrowed = new DataModel();
-                    //	borrowed.setItemId(itemId);
-                    //	borrowed.setItemName(value.getItemName());
-                    //	borrowed.setNumberOfDays(numberOfDays);
+
                     borrowed.setBorrowedBooks(itemId,numberOfDays);
                     itemsBorrowed.put(userId,borrowed);
                 }
@@ -496,7 +487,6 @@ public class McgServer extends UnicastRemoteObject implements LibUserInterface, 
         {
             try {
                 int monPort = 9986;
-                int mcgPort = 9987;
                 int conPort = 9988;
                 DatagramSocket aSocket = new DatagramSocket();
                 DataModel pack = new DataModel();
@@ -542,7 +532,6 @@ public class McgServer extends UnicastRemoteObject implements LibUserInterface, 
         logger.info(itemId);
 
         ArrayList<DataModel> list = mcgWaitlist.get(itemId);
-        int quantity = mcgLibrary.get(itemId).getQuantity();
         String reply = null;
         Iterator<DataModel> iter = list.iterator();
         while(mcgLibrary.get(itemId).getQuantity()!=0 && !list.isEmpty() && iter.hasNext()){
@@ -550,9 +539,7 @@ public class McgServer extends UnicastRemoteObject implements LibUserInterface, 
             reply = this.borrowItem( user.getUserId(),itemId,user.getDaysToBorrow());
             if(reply.startsWith("Succ")){
                 list.remove(user);
-                for(DataModel di:list){
-                    System.out.println("I am in....");
-                }
+
             }
         }
         logger.info(reply);

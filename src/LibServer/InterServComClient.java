@@ -61,34 +61,5 @@ public class InterServComClient {
         }
         return defaultReply;
     }
-/*
-    public String find(DataModel pack) {
-        return null;
-    }
-    public String returnItem(DataModel pack) {
-        return null;
-    }
-    public String borrowMCG(String userId, String itemId, int numberOfDays) {
-
-        return null;
-    }
-    public String borrowMON(String userId, String itemId, int numberOfDays) {
-
-        return null;
-    }
-    public String findMCG(String userId, String itemName) {
-        return null;
-    }
-    public String findMON(String userId, String itemName) {
-        return null;
-    }
-
-    public String returnMON(String userId, String itemId) {
-        return null;
-    }
-    public String returnMCG(String userId, String itemId) {
-        return null;
-    }
-*/
 
 }

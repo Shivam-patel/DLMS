@@ -24,9 +24,7 @@ import javax.xml.crypto.Data;
 
 public class ConServer extends UnicastRemoteObject implements LibUserInterface, LibManagerInterface,Runnable {
 
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 	private HashMap<String, DataModel> conLibrary = new HashMap<String, DataModel>();
 	private HashMap<String, ArrayList<DataModel>> conWaitlist = new HashMap<>();
@@ -36,7 +34,7 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 	private ArrayList<String> managers = new ArrayList<>();
 	int MCG = 13131;
 	int MON = 13132;
-	int CON = 13133;
+
 
 	private final static Logger logger = Logger.getLogger(ConServer.class.getName());
 	static private FileHandler fileTxt;
@@ -87,7 +85,7 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 		conWaitlist.put("CON0002", wait02);
 		conWaitlist.put("CON0001", wait);
 
-		Thread t = new Thread(this);
+		new Thread(this);
 
 
 
@@ -107,7 +105,7 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 		DatagramPacket request = new DatagramPacket(buffer,buffer.length);
 		System.out.println("conwait ready");
 		aSocket.receive(request);
-		ObjectInputStream iStream = null;
+		ObjectInputStream iStream ;
 		iStream = new ObjectInputStream(new ByteArrayInputStream(request.getData()));
 		DataModel pack = (DataModel) iStream.readObject();
 		iStream.close();
@@ -151,11 +149,9 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 
 		logger.info(managerId +"\t" + newManagerId);
 		if(managers.contains(newManagerId)) {
-			//		System.out.println("The manager already exist in the library databsae.");
 			return "Id already exist.";
 		}
 		else if(managerId.substring(0, 3).equals("CON") && managerId.substring(3,4).equals("M") && managerId.substring(4).matches(".*\\d+.*")) {
-			// make a new manager
 			managers.add(newManagerId);
 			logger.info("Success");
 
@@ -210,7 +206,6 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 			if(quantity== numb || quantity == -1) {
 				conLibrary.remove(itemId);
 
-				/* Call a method to remove all the allocations of any removed books. or Ask the TA about what to do. */
 				removeFromWaitlist(itemId);
 				logger.info("Success");
 
@@ -230,7 +225,6 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 			return "Item not present in the library";
 		}
 	}
-	//reference https://www.geeksforgeeks.org/iterate-map-java/
 	@Override
 	public String listItemAvailability(String managerId) {
 		String reply = "";
@@ -278,9 +272,7 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 				}
 				else {
 				borrowed = new DataModel();
-				//	borrowed.setItemId(itemId);
-			//	borrowed.setItemName(value.getItemName());
-			//	borrowed.setNumberOfDays(numberOfDays);
+
 					borrowed.setBorrowedBooks(itemId,numberOfDays);
 				itemsBorrowed.put(userId,borrowed);
 				}
@@ -504,7 +496,6 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 			try {
 				int monPort = 9986;
 				int mcgPort = 9987;
-				int conPort = 9988;
 				DatagramSocket aSocket = new DatagramSocket();
 				DataModel pack = new DataModel();
 				pack.setUserId(userId);

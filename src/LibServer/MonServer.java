@@ -22,9 +22,7 @@ import LibInterface.LibUserInterface;
 
 public class MonServer extends UnicastRemoteObject implements LibUserInterface, LibManagerInterface,Runnable {
 
-	/**
-	 *
-	 */
+
 	private static final long serialVersionUID = 1L;
 	private HashMap<String, DataModel> monLibrary = new HashMap<String, DataModel>();
 	private HashMap<String, ArrayList<DataModel>> monWaitlist = new HashMap<>();
@@ -34,7 +32,6 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 	private ArrayList<DataModel> users = new ArrayList<DataModel>();
 	private ArrayList<String> managers = new ArrayList<>();
 	int MCG = 13131;
-	int MON = 13132;
 	int CON = 13133;
 
 	private final static Logger logger = Logger.getLogger(MonServer.class.getName());
@@ -106,7 +103,7 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 		System.out.println("to receive");
 		aSocket.receive(request);
 		System.out.println("request received");
-		ObjectInputStream iStream = null;
+		ObjectInputStream iStream ;
 		iStream = new ObjectInputStream(new ByteArrayInputStream(request.getData()));
 		DataModel pack = (DataModel) iStream.readObject();
 		iStream.close();
@@ -149,11 +146,10 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 
 		logger.info(managerId +"\t" + newManagerId);
 		if(managers.contains(newManagerId)) {
-			//		System.out.println("The manager already exist in the library databsae.");
+
 			return "Id already exist.";
 		}
 		else if(managerId.substring(0, 3).equals("MON") && managerId.substring(3,4).equals("M") && managerId.substring(4).matches(".*\\d+.*")) {
-			// make a new manager
 			managers.add(newManagerId);
 			logger.info("Success");
 
@@ -208,7 +204,6 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 			if(quantity== numb || quantity == -1) {
 				monLibrary.remove(itemId);
 
-				/* Call a method to remove all the allocations of any removed books. or Ask the TA about what to do. */
 				removeFromWaitlist(itemId);
 				logger.info("Success");
 
@@ -228,7 +223,6 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 			return "Item not present in the library";
 		}
 	}
-	//reference https://www.geeksforgeeks.org/iterate-map-java/
 	@Override
 	public String listItemAvailability(String managerId) {
 		String reply = "";
@@ -276,9 +270,7 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 				}
 				else {
 					borrowed = new DataModel();
-					//	borrowed.setItemId(itemId);
-					//	borrowed.setItemName(value.getItemName());
-					//	borrowed.setNumberOfDays(numberOfDays);
+
 					borrowed.setBorrowedBooks(itemId,numberOfDays);
 					itemsBorrowed.put(userId,borrowed);
 				}

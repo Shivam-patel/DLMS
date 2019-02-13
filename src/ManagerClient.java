@@ -72,7 +72,6 @@ public class ManagerClient implements Runnable{
 			}
 
 			System.out.println("The result of the operation is as follows: \n" + reply);
-			//new Thread(new Client()).start();
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

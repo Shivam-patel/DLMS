@@ -12,7 +12,6 @@ public class DataModel implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String userId;
 	private String userName;
-	/*private ArrayList<Integer> numberOfDays;*/
 	private Integer daysToBorrow;
 	private String itemName;
 	private String itemId;
@@ -30,9 +29,7 @@ public class DataModel implements Serializable {
 	public DataModel() {
 		this.userId = "";
 		this.userName = "";
-/*
-		this.numberOfDays = new ArrayList<>();
-*/
+
 		this.itemName = "";
 		this.itemId = "";
 		ManagerId = "";
@@ -45,13 +42,7 @@ public class DataModel implements Serializable {
 
 	}
 
-/*public DataModel() {
-		this.userId = null;
-		this.numberOfDays = 0;
-		this.itemName = null;
-		this.quantity = -1;
-		this.borrowedBooks=null;
-	}*/
+
 
 	public Integer getBooksCon() {
 		return booksCon;
@@ -117,13 +108,7 @@ public class DataModel implements Serializable {
 		this.userId = userId;
 	}
 
-	/*public Integer getNumberOfDays(String itemId) {
-		return numberOfDays;
-	}
 
-	public void setNumberOfDays(Integer numberOfDays) {
-		this.numberOfDays.add(numberOfDays);
-			}*/
 
 	public String getItemName() {
 		return itemName;
@@ -142,13 +127,7 @@ public class DataModel implements Serializable {
 	}
 
 
-	/*public ArrayList<String> getBorrowedBooks() {
-		return borrowedBooks;
-	}
 
-	public void setBorrowedBooks(String borrowedBooks) {
-		this.borrowedBooks.add(borrowedBooks);
-	}*/
 	public void setBorrowedBooks(String itemId, Integer numberOfDays) {
 
 		this.borrowedBooks.put(itemId, numberOfDays);

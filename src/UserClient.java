@@ -53,23 +53,22 @@ public class UserClient implements Runnable{
 				String itemId;
 				int numberOfDays;
 				System.out.println("Enter corresponding itemId, and number of borrowing days");
-				//		Scanner in = new Scanner(System.in);
 				itemId = in.next();
 				numberOfDays = in.nextInt();
 				logger.info("borrowItem");
 				reply = user.borrowItem(userId, itemId, numberOfDays);
 				logger.info(userId+"\t"+itemId+"\t"+numberOfDays);
-			//	logger.info(reply);
+				logger.info(reply);
 				if(reply.startsWith("waitlist")) {
 					System.out.println(reply + "Press 1 to add, else press 0.");
 					if(in.nextInt()==1) {
 						logger.info("Add to waitlist");
 						reply = user.addToWaitlist(userId, itemId, numberOfDays);
-					//	logger.info(reply);
+						logger.info(reply);
 					}
 					else {
 						reply = "Exitting...";
-					//	logger.info(reply);
+						logger.info(reply);
 					}
 				}
 				break;
@@ -81,7 +80,7 @@ public class UserClient implements Runnable{
 				itemName = in.next();
 				logger.info(itemName);
 				reply = user.findItem(userId, itemName);
-				//	logger.info(reply);
+					logger.info(reply);
 
 				break;
 
@@ -101,14 +100,13 @@ public class UserClient implements Runnable{
 			logger.info(reply);
 			System.out.println("The result of the operation is as follows \n" + reply);
 
-			//new Thread(new Client()).start();
+
 
 			
 		}catch (RemoteException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		} catch (NotBoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
