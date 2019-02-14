@@ -32,6 +32,7 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 	private HashMap<String,DataModel> itemsBorrowed = new HashMap<>();
 	private ArrayList<DataModel> users = new ArrayList<DataModel>();
 	private ArrayList<String> managers = new ArrayList<>();
+	private Object lock;
 	int MCG = 13131;
 	int MON = 13132;
 
@@ -56,7 +57,7 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 		System.out.println(book1);
 		System.out.println(book2);
 		System.out.println(book3);
-
+		lock = new Object();
 		logger.setLevel(Level.INFO);
 		fileTxt = new FileHandler("ConServerLog.txt");
 		logger.addHandler(fileTxt);
@@ -204,16 +205,18 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 			if(quantity>numb)
 				return "Incorrect Quantity";
 			if(quantity== numb || quantity == -1) {
-				conLibrary.remove(itemId);
-
-				removeFromWaitlist(itemId);
+				synchronized (lock) {
+					conLibrary.remove(itemId);
+					removeFromWaitlist(itemId);
+				}
 				logger.info("Success");
-
 				return "Success";
 			}
 			else {
-				numb-=quantity;
-				value.setQuantity(numb);
+				synchronized (lock) {
+					numb -= quantity;
+					value.setQuantity(numb);
+				}
 				logger.info("Success");
 
 				return "Success";
@@ -263,18 +266,23 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 			int quantity = value.getQuantity();
 			if(quantity != 0) {
 				quantity--;
-				value.setQuantity(quantity);
-				value.setQuantity(quantity);
+				synchronized (lock) {
+					value.setQuantity(quantity);
+					value.setQuantity(quantity);
+				}
 				DataModel borrowed;
-				if(itemsBorrowed.containsKey(userId)){
+				if(itemsBorrowed.containsKey(userId)) {
 					borrowed = itemsBorrowed.get(userId);
-					borrowed.setBorrowedBooks(itemId, numberOfDays);
+					synchronized (lock) {
+						borrowed.setBorrowedBooks(itemId, numberOfDays);
+					}
 				}
 				else {
 				borrowed = new DataModel();
-
-					borrowed.setBorrowedBooks(itemId,numberOfDays);
-				itemsBorrowed.put(userId,borrowed);
+					synchronized (lock) {
+						borrowed.setBorrowedBooks(itemId, numberOfDays);
+						itemsBorrowed.put(userId, borrowed);
+					}
 				}
 
 				reply = "Success";
@@ -288,43 +296,49 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 		else {
 			DataModel user = new DataModel();
 			if(itemId.startsWith("MCG")) {
-				Iterator<DataModel> iter = users.iterator();
-				while(iter.hasNext()){
-					user = iter.next();
-					if(user.getUserId().startsWith(userId)){
-						if(user.getBooksMcg()==1){
-							logger.info("you can not get two books from a foreign library");
-							return "you can not get two books from a foreign library";
+				synchronized (lock) {
+					Iterator<DataModel> iter = users.iterator();
+					while (iter.hasNext()) {
+						user = iter.next();
+						if (user.getUserId().startsWith(userId)) {
+							if (user.getBooksMcg() == 1) {
+								logger.info("you can not get two books from a foreign library");
+								return "you can not get two books from a foreign library";
+							}
+							break;
 						}
-						break;
 					}
+					logger.info("requesting McGill server");
 				}
-				logger.info("requesting McGill server");
 				InterServComClient temp = new InterServComClient(MCG, 1);
 				DataModel pack = new DataModel();
+
 				pack.setUserId(userId);
 				pack.setItemId(itemId);
 				pack.setDaysToBorrow(numberOfDays);
 				reply = temp.operate(pack);
 				if(reply.startsWith("Succ")){
-					user.setBooksMcg(1);
+					synchronized (lock) {
+						user.setBooksMcg(1);
+					}
 				}
 			}
 			else if(itemId.startsWith("MON")) {
-				Iterator<DataModel> iter = users.iterator();
+				synchronized (lock) {
+					Iterator<DataModel> iter = users.iterator();
 
-				while(iter.hasNext()){
-					user = iter.next();
-					if(user.getUserId().startsWith(userId)){
-						if(user.getBooksMon()==1){
-							logger.info("you can not get two books from a foreign library");
-							return "you can not get two books from a foreign library";
+					while (iter.hasNext()) {
+						user = iter.next();
+						if (user.getUserId().startsWith(userId)) {
+							if (user.getBooksMon() == 1) {
+								logger.info("you can not get two books from a foreign library");
+								return "you can not get two books from a foreign library";
+							}
+							break;
 						}
-						break;
 					}
+					logger.info("requesting Montreal server");
 				}
-				logger.info("requesting Montreal server");
-
 				InterServComClient temp = new InterServComClient(MON, 2);
 				DataModel pack = new DataModel();
 				pack.setUserId(userId);
@@ -332,7 +346,9 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 				pack.setDaysToBorrow(numberOfDays);
 				reply = temp.operate(pack);
 				if(reply.startsWith("Succ")){
-					user.setBooksMon(1);
+					synchronized (lock) {
+						user.setBooksMon(1);
+					}
 				}
 
 			}
@@ -398,24 +414,31 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 		if(itemId.startsWith("CON")) {
 			if(removedItems.contains(itemId)){
 				reply = "Success";
+				synchronized (lock) {
 				DataModel value = itemsBorrowed.get(userId);
 				if(value.getBorrowedBooks().containsKey(itemId)) {
-					value.getBorrowedBooks().remove(itemId);
+
+						value.getBorrowedBooks().remove(itemId);
+					}
 				}
 			}
 			else if(itemsBorrowed.containsKey(userId))
 			{
 				DataModel value = itemsBorrowed.get(userId);
 				if(value.getBorrowedBooks().containsKey(itemId)) {
-					value.getBorrowedBooks().remove(itemId);
-					DataModel item = conLibrary.get(itemId);
-					int quantity = item.getQuantity();
-					item.setQuantity(quantity+1);
+					synchronized (lock) {
+						value.getBorrowedBooks().remove(itemId);
+						DataModel item = conLibrary.get(itemId);
+						int quantity = item.getQuantity();
+						item.setQuantity(quantity + 1);
+					}
 					reply = this.moveWaitlist(itemId);
 
 					if(value.getBorrowedBooks().isEmpty()) {
-						itemsBorrowed.remove(userId);
-						reply = "Success";
+						synchronized (lock) {
+							itemsBorrowed.remove(userId);
+							reply = "Success";
+						}
 					}
 
 				}
@@ -487,8 +510,10 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 			pack.setUserId(userId);
 			pack.setDaysToBorrow(numberOfDays);
 			value.add(pack);
-			conWaitlist.put(itemId, value);
-			logger.info("Success");
+			synchronized (lock) {
+				conWaitlist.put(itemId, value);
+				logger.info("Success");
+			}
 			return "Success";
 		}
 		else
@@ -539,30 +564,32 @@ public class ConServer extends UnicastRemoteObject implements LibUserInterface, 
 	public String moveWaitlist(String itemId) throws IOException {
 		logger.info("moveWaitList");
 		logger.info(itemId);
-
+		synchronized (lock) {
 		ArrayList<DataModel> list = conWaitlist.get(itemId);
 
 		String reply = null;
 		Iterator<DataModel> iter = list.iterator();
-		while(conLibrary.get(itemId).getQuantity()!=0 && !list.isEmpty() && iter.hasNext()){
-			DataModel user = iter.next();
-			reply = this.borrowItem( user.getUserId(),itemId,user.getDaysToBorrow());
-			if(reply.startsWith("Succ")){
-				list.remove(user);
-				for(DataModel di:list){
-					System.out.println("I am in....");
+
+			while (conLibrary.get(itemId).getQuantity() != 0 && !list.isEmpty() && iter.hasNext()) {
+				DataModel user = iter.next();
+				reply = this.borrowItem(user.getUserId(), itemId, user.getDaysToBorrow());
+				if (reply.startsWith("Succ")) {
+					list.remove(user);
 				}
 			}
+			logger.info(reply);
+			return reply;
 		}
-		logger.info(reply);
-		return reply;
+
 	}
 	public void removeFromWaitlist(String itemId){
 		logger.info("removeFromWaitlist");
 		logger.info(itemId);
-		conWaitlist.remove(itemId);
-		removedItems.add(itemId);
-		logger.info("Success");
+		synchronized (lock) {
+			conWaitlist.remove(itemId);
+			removedItems.add(itemId);
+			logger.info("Success");
+		}
 	}
 
 }

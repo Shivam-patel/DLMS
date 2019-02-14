@@ -14,6 +14,12 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * <p>This class serves as a client that enables inter server communication and forwards the request to appropriate server.
+ * It also recieves the answer and routes it to its destination
+ * @author shiv
+ *
+ */
 public class InterServComClient {
    /* private final static Logger logger = Logger.getLogger(InterServComClient.class.getName());
     static private FileHandler fileTxt ;*/
@@ -28,6 +34,15 @@ public class InterServComClient {
 
     }
 
+    /**
+     * <p>
+     *     The method operate takes a DataModel object as an input.
+     *     This method extracts the input object to forward the request
+     * </p>
+     * @param pack This is a DataModel object that holds information regarding the operation to be executed.
+     * @return replyString this string contains the reply from the executed operation.
+     *
+     */
     public String operate(DataModel pack){
         String defaultReply = "System Failure";
         try{
@@ -48,7 +63,7 @@ public class InterServComClient {
             byte [] buffer1 = new byte[1000];
             DatagramPacket rep = new DatagramPacket(buffer1, buffer1.length);
             aSocket.receive(rep);
-           // buffer = reply.getData();
+
 
             String replyString = new String(rep.getData());
             System.out.println(replyString);

@@ -12,6 +12,12 @@ import java.util.logging.Logger;
 
 import LibInterface.LibUserInterface;
 
+/**
+ * <p>The class UserClient is a runnable class that recieves the handle whenever a clientid is identified as a User.</p>
+ * @see Runnable
+ * @author shiv
+ *
+ */
 public class UserClient implements Runnable{
 	private String userId;
 	private final static Logger logger = Logger.getLogger(UserClient.class.getName());

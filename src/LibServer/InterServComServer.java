@@ -13,6 +13,9 @@ import java.net.DatagramSocket;
     import java.rmi.registry.Registry;
 
 
+/**
+ *
+ */
 public class InterServComServer implements  Runnable{
 
     int MCG = 13131;
