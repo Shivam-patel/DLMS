@@ -16,22 +16,16 @@ import java.util.logging.Logger;
 
 /**
  * <p>This class serves as a client that enables inter server communication and forwards the request to appropriate server.
+ * Any interserver request is forwarded by the host server to InterServComClient. Hence this acts as a client for interserver communication.
  * It also recieves the answer and routes it to its destination
- * @author shiv
  *
  */
 public class InterServComClient {
-   /* private final static Logger logger = Logger.getLogger(InterServComClient.class.getName());
-    static private FileHandler fileTxt ;*/
     private final int port;
     private int flag ;
     public InterServComClient(int port, int flag) throws IOException {
         this.port = port;
         this.flag = flag;
-      /*  logger.setLevel(Level.INFO);
-        fileTxt = new FileHandler("InerServComServer.txt");
-        logger.addHandler(fileTxt);*/
-
     }
 
     /**

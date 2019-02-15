@@ -17,6 +17,8 @@ public class Client implements Runnable{
 
 	private final static Logger logger = Logger.getLogger(Client.class.getName());
 	static private FileHandler fileTxt;
+
+
 	public Client() {
 		
 	}

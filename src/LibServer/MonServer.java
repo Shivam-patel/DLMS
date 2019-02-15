@@ -18,7 +18,9 @@ import java.util.logging.Logger;
 import model.DataModel;
 import LibInterface.LibManagerInterface;
 import LibInterface.LibUserInterface;
-
+/**
+ * This class is an abstraction for the Concordia library that handles all the client requests directed to concordia library.
+ */
 
 public class MonServer extends UnicastRemoteObject implements LibUserInterface, LibManagerInterface,Runnable {
 
@@ -37,7 +39,9 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 
 	private final static Logger logger = Logger.getLogger(MonServer.class.getName());
 	static private FileHandler fileTxt;
-
+	/**
+	 * The class constructor that initiates and engenders new books, users, and managers at the very beginning.
+	 */
 	public MonServer() throws Exception{
 		super();
 		DataModel book1 = new DataModel();
@@ -85,9 +89,8 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 		monWaitlist.put("MON0001", wait);
 		Thread t = new Thread(this);
 
-
-
 	}
+
 	public void run() {
 		try {
 			this.getWaitRequest();
@@ -97,7 +100,11 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 			e.printStackTrace();
 		}
 	}
-
+	/**
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * This method performs the interserver waitlisting for all the libraries.
+	 */
 	public void getWaitRequest() throws IOException, ClassNotFoundException {
 		DatagramSocket aSocket = new DatagramSocket(9986);
 		byte[] buffer = new byte[1000];
@@ -115,7 +122,11 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 		DatagramPacket re = new DatagramPacket(response, response.length,request.getAddress(),request.getPort());
 		aSocket.send(re);
 	}
-
+	/**This method adds a new user when called by a manager of corresponding server.
+	 * @param managerId
+	 * @param userId
+	 * @return
+	 */
 	@Override
 	public String addUser(String managerId, String userId) {
 		logger.info("addUser");
@@ -142,7 +153,11 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 			return reply;
 		}
 	}
-
+	/** This method adds a new manager if the manager does not already exist in the library.
+	 * @param managerId
+	 * @param newManagerId
+	 * @return
+	 */
 	@Override
 	public String addManager(String managerId, String newManagerId) {
 
@@ -166,6 +181,15 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 		}
 	}
 
+	/**This method adds a new item in the current library when called by one of the managers of the library.
+	 * If the item already exists, it adds to the quantity of item, the input quantity
+	 * @param managerId
+	 * @param itemId
+	 * @param itemName
+	 * @param quantity
+	 * @return
+	 * @throws IOException
+	 */
 	@Override
 	public String addItem(String managerId, String itemId, String itemName, int quantity) throws IOException {
 		boolean old = false;
@@ -198,7 +222,13 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 		}
 		return "Success";
 	}
-
+	/**
+	 * This method removes an item from the library or it decreases the availability of that item as per the parameters passed by the manager.
+	 * @param managerId
+	 * @param itemId
+	 * @param quantity
+	 * @return
+	 */
 	@Override
 	public String removeItem(String managerId, String itemId, int quantity) {
 		try {
@@ -231,6 +261,10 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 			return "Item not present in the library";
 		}
 	}
+	/**This method lists all the item with its availability in the current library when called by a manager
+	 * @param managerId
+	 * @return
+	 */
 	@Override
 	public String listItemAvailability(String managerId) {
 		String reply = "";
@@ -252,7 +286,14 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 		logger.info(reply);
 		return reply;
 	}
-
+	/**This method is invoked when a user wants to borrow a book and has the necessary information to borrow that book.
+	 * All the preconditions to borrow a book as mentioned in provided literature is applied in this method.
+	 * @param userId
+	 * @param itemId
+	 * @param numberOfDays
+	 * @return
+	 * @throws IOException
+	 */
 	@Override
 	public String borrowItem(String userId, String itemId, int numberOfDays) throws IOException {
 		String reply;
@@ -354,7 +395,12 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 
 		return reply;
 	}
-
+	/**This method is called when a user wants to find a particular item by its name.
+	 * The method returns books with specified name across
+	 * @param userId
+	 * @param itemName
+	 * @throws IOException
+	 */
 	@Override
 	public String findItem(String userId, String itemName) throws IOException {
 		String reply = "";
@@ -399,7 +445,12 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 		logger.info(reply);
 		return reply;
 	}
-
+	/**This method enables user to return any library item possessed by the user after checking all the preconditions.
+	 * @param userId
+	 * @param itemId
+	 * @return
+	 * @throws IOException
+	 */
 	@Override
 	public String ReturnItem(String userId, String itemId) throws IOException {
 		logger.info("ReturnItem");
@@ -461,7 +512,11 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 
 		return reply;
 	}
-
+	/**This method checks if the Id provided by the client is valid or not.
+	 * @param userId
+	 * @param userType
+	 * @return
+	 */
 	@Override
 	public boolean validate(String userId, String userType)
 	{
@@ -479,7 +534,12 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 		else
 			return managers.contains(userId);
 	}
-
+	/**This method is called when a user wants to borrow a book but the availability is zero and the users wishes to be added to the waitlist of that book.
+	 * @param userId
+	 * @param itemId
+	 * @param numberOfDays
+	 * @return
+	 */
 
 	@Override
 	public String addToWaitlist(String userId, String itemId, int numberOfDays) {
@@ -554,6 +614,11 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 
 
 	}
+	/**This method is not directly associated with any user input but it is called whenever the item is made available(availability becomes non zero).
+	 * @param itemId
+	 * @return
+	 * @throws IOException
+	 */
 	public String moveWaitlist(String itemId) throws IOException {
 		logger.info("moveWaitList");
 		logger.info(itemId);
@@ -576,6 +641,9 @@ public class MonServer extends UnicastRemoteObject implements LibUserInterface, 
 			return reply;
 		}
 	}
+	/**This method is called when a manager requests to remove an item and the availability reduces to zero.
+	 * @param itemId
+	 */
 	public void removeFromWaitlist(String itemId){
 		logger.info("removeFromWaitlist");
 		logger.info(itemId);

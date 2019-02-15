@@ -4,6 +4,12 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 public class ServerDriver {
+    /** This method is the main driver method that initializes and instantiates all the servers and abstractions required for effortless communication
+     * (client-server as well as Inter-Server communication)
+     * This method creates the RMI registry as well and uploads the required server objects.
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[]args) throws Exception{
         ConServer cs = new ConServer();
         McgServer mc = new McgServer();

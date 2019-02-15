@@ -32,6 +32,10 @@ public class UserClient implements Runnable{
 	}
 
 
+	/**
+	 * This method asks the user for the functionality that they want to perform.
+	 *
+	 */
 	public void run() {
 		System.out.println("Press 1 to borrow an item from the library");
 		System.out.println("Press 2 to find an item in the library");

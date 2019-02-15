@@ -14,7 +14,8 @@ import java.net.DatagramSocket;
 
 
 /**
- *
+ * This class acts as a server for any interserver communication happening in the whole project.
+ * The request sent from InterServComClient is accepted here
  */
 public class InterServComServer implements  Runnable{
 
